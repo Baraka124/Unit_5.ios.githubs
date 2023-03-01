@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Methane Molecule</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      #info {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        color: white;
+      }
+
+      #molecule-info {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info">Drag to rotate</div>
+    <div id="molecule-info"></div>
+    <script src="https://threejs.org/build/three.min.js"></script>
+    <script>
+      // Set up the scene, camera, and renderer
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.z = 10;
+      var renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Create sphere objects for atoms and cylinders for bonds
+      var carbonGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+      var carbonMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+      var carbon = new THREE.Mesh(carbonGeometry, carbonMaterial);
+      carbon.position.set(0, 0, 0);
+      scene.add(carbon);
+
+      var hydrogenGeometry = new THREE.SphereGeometry(1, 32, 32);
+      var hydrogenMaterial = new THREE.MeshPhongMaterial({ color: 0xadd8e6 });
+      var hydrogen1 = new THREE.Mesh(hydrogenGeometry, hydrogenMaterial);
+      hydrogen1.position.set(3, 0, 0);
+      scene.add(hydrogen1);
+
+      var hydrogen2 = new THREE.Mesh(hydrogenGeometry, hydrogenMaterial);
+      hydrogen2.position.set(-3, 0, 0);
+      scene.add(hydrogen2);
+
+      var hydrogen3 = new THREE.Mesh(hydrogenGeometry, hydrogenMaterial);
+      hydrogen3.position.set(0, 3, 0);
+      scene.add(hydrogen3);
+
+      var hydrogen4 = new THREE.Mesh(hydrogenGeometry, hydrogenMaterial);
+      hydrogen4.position.set(0, -3, 0);
+      scene.add(hydrogen4);
+
+      var bondGeometry = new THREE.CylinderGeometry(0.3, 0.3, 3, 32);
+      var bondMaterial = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        emissive: 0xcccccc,
+      });
+
+      var bond1 = new THREE.Mesh(bondGeometry, bondMaterial);
+      bond1.rotation.z = Math.PI / 2;
+      bond1.position.set(1.5, 0, 0);
+      scene.add(bond1);
+
+      var bond2 = new THREE.Mesh(bondGeometry, bondMaterial);
+      bond2.rotation.z = Math.PI / 2;
+bond2.position.set(-1.5, 0, 0);
+scene.add(bond2);
+  var bond3 = new THREE.Mesh(bondGeometry, bondMaterial);
+  bond3.rotation.z = Math.PI / 2;
+  bond3.rotation.x = Math.PI / 2;
+  bond3.position.set(0, 1.5, 0);
+  scene.add(bond3);
+
+  var bond4 = new THREE.Mesh(bondGeometry, bondMaterial);
+  bond4.rotation.z = Math.PI / 2;
+  bond4.rotation.x = Math.PI / 2;
+  bond4.position.set(0, -1.5, 0);
+  scene.add(bond4);
+
+  // Add lighting
+  var light = new THREE.DirectionalLight(0xffffff, 1.5);
+  light.position.set(1, 1, 1);
+  scene.add(light);
+
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(ambientLight);
+
+  // Handle mouse and touch events for rotating the camera
+  var isDragging = false;
+  var previousMousePosition = {
+    x: 0,
+    y: 0,
+  };
+
+  function onDocumentMouseDown(event) {
+    isDragging = true;
+  }
+
+  function onDocumentMouseMove(event) {
+    var deltaMove = {
+      x: event.clientX - previousMousePosition.x,
+      y: event.clientY - previousMousePosition.y,
+    };
+
+    if (isDragging) {
+      var deltaRotationQuaternion = new THREE.Quaternion()
+        .setFromEuler(
+          new THREE.Euler(
+            toRadians(deltaMove.y * 1),
+            toRadians(deltaMove.x * 1),
+            0,
+            "XYZ"
+          )
+        )
+        .multiply(camera.quaternion);
+
+      camera.setQuaternion(deltaRotationQuaternion);
+    }
+
+    previousMousePosition = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }
+
+  function onDocumentMouseUp(event) {
+    isDragging = false;
+  }
+
+  function onDocumentTouchStart(event) {
+    isDragging = true;
+  }
+
+  function onDocumentTouchMove(event) {
+    var deltaMove = {
+      x: event.touches[0].clientX - previousMousePosition.x,
+      y: event.touches[0].clientY - previousMousePosition.y,
+    };
+
+    if (isDragging) {
+      var deltaRotationQuaternion = new THREE.Quaternion()
+        .setFromEuler(
+          new THREE.Euler(
+            toRadians(deltaMove.y * 1),
+            toRadians(deltaMove.x * 1),
+            0,
+            "XYZ"
+          )
+        )
+        .multiply(camera.quaternion);
+
+      camera.setQuaternion(deltaRotationQuaternion);
+    }
+
+    previousMousePosition = {
+      x: event.touches[0].clientX,
+      y: event.touches[0].clientY,
+    };
+  }
+
+  function onDocumentTouchEnd(event) {
+    isDragging = false;
+  }
+
+  function toRadians(angle) {
+    return angle * (Math.PI / 180);
+  }
+
+  document.addEventListener("mousedown", onDocumentMouseDown, false);
+  document.addEventListener("mousemove", onDocumentMouseMove, false);
+  document.addEventListener("mouseup", onDocumentMouseUp, false);
+  document.addEventListener("touchstart", onDocumentTouchStart, false);
+  document.addEventListener("touchmove", onDocumentTouchMove, false);
+  document.addEventListener("touchend", onDocumentTouchEnd, false);
+
+  // Render the scene
+  function animate() {
+    requestAnimationFrame(animate);
+
+    // Rotate the carbon atom
+    carbon.rotation.x += 0.01;
+    carbon.rotation.y+= 0.01;
+    // Render the scene
+renderer.render(scene, camera);
+}
+
+animate();
+
+</script>
+</body>
+</html>
+
+
